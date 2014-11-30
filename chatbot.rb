@@ -1,8 +1,15 @@
 require 'colorize'
+
+ADD_KEY = 'When I say "(.*)" you should reply "(.*)"'
+
 def get_response(input)
   key = RESPONSES.keys.select {|k| /#{k}/ =~ input }.sample
   /#{key}/ =~ input
   response = RESPONSES[key]
+  if key == ADD_KEY
+  	RESPONSES[$1] = $2
+  	puts "It is added"
+  end
   response.nil? ? 'sorry?' : response % { c1: $1, c2: $2, c3: $3}
 end
 
@@ -19,7 +26,8 @@ RESPONSES = { 'goodbye' => 'bye',
           	  'I am going to (.*)' => 'Ok. Enjoy',
           	  'My favorite language is (.*)' => 'I also like %{c1}',
           	  'My favorite cities are (.*), (.*) and (.*)' =>
-          	    'I have never been in %{c1} and %{c2} but I have been in %{c3} and I also liked it a lot'
+          	    'I have never been in %{c1} and %{c2} but I have been in %{c3} and I also liked it a lot',
+          	  ADD_KEY => 'Ok. I got that'
           	}
 
 puts "Bot: ".blue + "Hello, what's your name?"
