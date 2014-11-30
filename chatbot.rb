@@ -2,18 +2,10 @@ require 'colorize'
 
 ADD_KEY = 'When I say "(.*)" you should reply "(.*)"'
 
-def get_response(input)
-  key = RESPONSES.keys.select {|k| /#{k}/ =~ input }.sample
-  /#{key}/ =~ input
-  response = RESPONSES[key]
-  if key == ADD_KEY
-  	RESPONSES[$1] = $2
-  	puts "It is added"
-  end
-  response.nil? ? 'sorry?' : response % { c1: $1, c2: $2, c3: $3}
-end
-
-RESPONSES = { 'goodbye' => 'bye', 
+if File.exists?("out.txt")
+	RESPONSES = Marshal.load(IO.read("out.txt"))
+else
+	RESPONSES = { 'goodbye' => 'bye', 
               'sayonara' => 'sayonara', 
               'the weather is (.*)' => 'I hate it when it\'s %{c1}', 
               'I love (.*)' => 'I love %{c1} too', 
@@ -29,6 +21,20 @@ RESPONSES = { 'goodbye' => 'bye',
           	    'I have never been in %{c1} and %{c2} but I have been in %{c3} and I also liked it a lot',
           	  ADD_KEY => 'Ok. I got that'
           	}
+end
+
+def get_response(input)
+  key = RESPONSES.keys.select {|k| /#{k}/ =~ input }.sample
+  /#{key}/ =~ input
+  response = RESPONSES[key]
+  if key == ADD_KEY
+  	RESPONSES[$1] = $2
+  	puts "It is added"
+  	str = Marshal.dump(RESPONSES)
+  	File.open("out.txt", "w") {|f| f.write(str) }
+  end
+  response.nil? ? 'sorry?' : response % { c1: $1, c2: $2, c3: $3}
+end
 
 puts "Bot: ".blue + "Hello, what's your name?"
 print "Person: ".red
