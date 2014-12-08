@@ -18,34 +18,41 @@ else
           	  'I am going to (.*)' => 'Ok. Enjoy',
           	  'My favorite language is (.*)' => 'I also like %{c1}',
           	  'My favorite cities are (.*), (.*) and (.*)' =>
-          	    'I have never been in %{c1} and %{c2} but I have been in %{c3} and I also liked it a lot',
+          	  'I have never been in %{c1} and %{c2} but I have been in %{c3} and I also liked it a lot',
           	  ADD_KEY => 'Ok. I got that'
           	}
 end
 
 def get_response(input)
-  key = RESPONSES.keys.select {|k| /#{k}/ =~ input }.sample
+  key = RESPONSES.keys.select {|k| /#{k}/ =~ input }.first
   /#{key}/ =~ input
-  response = RESPONSES[key]
-  if key == ADD_KEY
-  	RESPONSES[$1] = $2
-  	puts "It is added"
-  	str = Marshal.dump(RESPONSES)
-  	File.open("out.txt", "w") {|f| f.write(str) }
-  end
+  response = RESPONSES[key] 
+  add_response($1, $2) if key == ADD_KEY
   response.nil? ? 'sorry?' : response % { c1: $1, c2: $2, c3: $3}
 end
 
-puts "Bot: ".blue + "Hello, what's your name?"
-print "Person: ".red
-name = gets.chomp
-puts "Bot:".blue + "Hello #{name}"
-print "Person: ".red
-while(input = gets.chomp) do
-  puts "Bot: ".blue + get_response(input)
-  if input == 'goodbye' || input == 'sayonara'
-  	break
-  else
-  	print "Person: ".red
+def add_response(question, answer)
+  RESPONSES[question] = answer
+    puts "It is added"
+    str = Marshal.dump(RESPONSES)
+    File.open("out.txt", "w") {|f| f.write(str) }
+end
+
+def introduction 
+  puts "Bot: ".blue + "Hello, what's your name?"
+  print "Person: ".red
+  name = gets.chomp
+  puts "Bot:".blue + "Hello #{name}"
+  print "Person: ".red
+end
+
+def have_conversation 
+  while(input = gets.chomp) do
+    puts "Bot: ".blue + get_response(input)
+    break if input == 'goodbye' || input == 'sayonara'
+    print "Person: ".red
   end
 end
+
+introduction
+have_conversation
